@@ -10,5 +10,7 @@ urlpatterns = [
     path("logout", views.logout_view, name="logout"),
     path("register", views.register, name="register"),
     path('newPost',views.new_post,name="newPost"),
-    path('profilePage/<str:username>',views.profile_page,name="profilePage")
+    path('profilePage/<str:username>',views.profile_page,name="profilePage"),
+    path('follow/<str:username>',views.follow,name="follow"),
+    path('unfollow/<str:username>',views.unfollow,name="unfollow")
 ]

@@ -1,7 +1,7 @@
 from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
-from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import redirect, render
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 
@@ -82,9 +82,34 @@ def new_post(request):
 
 def profile_page(request,username):
     user = User.objects.get(username=username)
+    is_following = request.user.following.filter(username=user.username).exists()
     return render(request,'network/profilepage.html',{
         'profile':user,
         'following_count':user.following.count(),
         'followers_count':user.followers.count(),
-        'all_posts': user.posts.order_by('-post_creation_date')
+        'all_posts': user.posts.order_by('-post_creation_date'),
+        'is_following':is_following
     })
+
+
+@login_required
+def follow(request,username):
+    if request.method == "POST":
+        user_to_follow = get_object_or_404(User, username=username)
+        request.user.following.add(user_to_follow)
+    
+        return JsonResponse({"message": "Followed successfully",})
+    
+    return JsonResponse({"error": "Method not allowed"}, status=405)
+
+
+@login_required
+def unfollow(request,username):
+    if request.method == "POST":
+        user_to_unfollow = get_object_or_404(User, username=username)
+        request.user.following.remove(user_to_unfollow)
+    
+        return JsonResponse({"message": "unFollowed successfully"})
+    
+    return JsonResponse({"error": "Method not allowed"}, status=405)
+

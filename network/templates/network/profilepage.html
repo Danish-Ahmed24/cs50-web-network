@@ -1,17 +1,21 @@
 {% extends "network/layout.html" %}
+{% load static %}
 
 {% block title %}profilePage{% endblock title %}
 
 {% block body %}
 <div class="container">
         <h1>username: {{profile.username}}</h1>
-        <h2>followers: {{followers_count}}</h2>
-        <h2>following: {{following_count}}</h2>
+        <h2>followers: <span id='followers-count'>{{followers_count}}</span></h2>
+        <h2>following:<span id='following-count'> {{following_count}}</span></h2>
         {% if user.username != profile.username %}
-            <button>Follow</button>
+            <button id='follow_or_unfollow_btn' data-author='{{profile.username}}'>{% if is_following %}Unfollow{% else %}Follow{% endif %}</button>
         {% endif %}
     </div>
 
     <h1>Posts:</h1>
     {% include "network/_posts_list.html" with all_posts=all_posts %}    
 {% endblock body %}
+{% block scripts %}
+        <script src="{% static 'network/js/follow.js' %}"></script>
+{% endblock scripts %}
