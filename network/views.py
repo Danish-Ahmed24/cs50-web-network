@@ -112,4 +112,13 @@ def unfollow(request,username):
         return JsonResponse({"message": "unFollowed successfully"})
     
     return JsonResponse({"error": "Method not allowed"}, status=405)
+@login_required
+def following(request):
+    # Get all posts from users the logged-in user is following
+    all_posts = Post.objects.filter(
+        post_creator__in=request.user.following.all()
+    ).order_by('-post_creation_date')  # newest first
 
+    return render(request, 'network/following.html', {
+        'all_posts': all_posts,
+    })
