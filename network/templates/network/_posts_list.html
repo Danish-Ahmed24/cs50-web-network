@@ -1,0 +1,12 @@
+{% for post in all_posts %}
+    <div class="card">
+        <h4><a href='{% url "profilePage" username=post.post_creator.username%}'>{{ post.post_creator }}</a></h4>
+        <p>{{ post.post_content }}</p>
+        <p>posted at {{ post.post_creation_date }}</p>
+        <p>{{ post.posts_likes.count }} ❤️</p>
+    </div>
+{% empty %}
+    <p>No posts yet.</p>
+{% endfor %}
+
+

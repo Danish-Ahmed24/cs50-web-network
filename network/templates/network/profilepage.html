@@ -1,0 +1,17 @@
+{% extends "network/layout.html" %}
+
+{% block title %}profilePage{% endblock title %}
+
+{% block body %}
+<div class="container">
+        <h1>username: {{profile.username}}</h1>
+        <h2>followers: {{followers_count}}</h2>
+        <h2>following: {{following_count}}</h2>
+        {% if user.username != profile.username %}
+            <button>Follow</button>
+        {% endif %}
+    </div>
+
+    <h1>Posts:</h1>
+    {% include "network/_posts_list.html" with all_posts=all_posts %}    
+{% endblock body %}
