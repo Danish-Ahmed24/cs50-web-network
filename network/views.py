@@ -4,14 +4,21 @@ from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
-
+from django.core.paginator import Paginator
 from .models import *
 
 def index(request):
+    all_posts = Post.objects.order_by('-post_creation_date')
+    paginator = Paginator(all_posts,10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
 
-    return render(request,'network/index.html',{
-        "all_posts": Post.objects.order_by('-post_creation_date')
-    })
+
+    return render(request, 'network/index.html', {
+    "page_obj": page_obj,
+    
+})
+
 
 
 def login_view(request):
@@ -82,12 +89,16 @@ def new_post(request):
 
 def profile_page(request,username):
     user = User.objects.get(username=username)
+    all_posts= user.posts.order_by('-post_creation_date')
+    paginator = Paginator(all_posts,10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
     is_following = request.user.following.filter(username=user.username).exists()
     return render(request,'network/profilepage.html',{
         'profile':user,
         'following_count':user.following.count(),
         'followers_count':user.followers.count(),
-        'all_posts': user.posts.order_by('-post_creation_date'),
+        'page_obj': page_obj,
         'is_following':is_following
     })
 
@@ -118,7 +129,9 @@ def following(request):
     all_posts = Post.objects.filter(
         post_creator__in=request.user.following.all()
     ).order_by('-post_creation_date')  # newest first
-
+    paginator = Paginator(all_posts,10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
     return render(request, 'network/following.html', {
-        'all_posts': all_posts,
+        'page_obj': page_obj,
     })
