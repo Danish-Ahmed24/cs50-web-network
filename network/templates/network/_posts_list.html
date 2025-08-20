@@ -1,12 +1,42 @@
+{% load static %}
 {% for post in page_obj %}
-    <div class="card">
-        <h4><a href='{% url "profilePage" username=post.post_creator.username%}' >{{ post.post_creator }}</a></h4>
-        <p>{{ post.post_content }}</p>
-        <p>posted at {{ post.post_creation_date }}</p>
-        <p>{{ post.posts_likes.count }} ❤️</p>
-      </div>
+  <div class="card">
+    <h4>
+      <a href='{% url "profilePage" username=post.post_creator.username %}'>
+        {{ post.post_creator }}
+      </a>
+    </h4>
+
+    <div class="default" style="display: block;">
+      <p id="post-content">{{ post.post_content }}</p>
+      <p>posted at {{ post.post_creation_date }}</p>
+
+      <!-- Like Count -->
+      <p id="likes-count-{{ post.id }}">{{ post.posts_likes.count }} ❤️</p>
+
+      <!-- ✅ Toggle button -->
+      <button 
+        class="btn-toggle-like btn btn-primary btn-small" 
+        data-id="{{ post.id }}">
+        {% if user in post.posts_likes.all %}
+          Unlike 💔
+        {% else %}
+          Like ❤️
+        {% endif %}
+      </button>
+
+      {% if post.post_creator == user %}
+        <button id="{{post.id}}" 
+                data-id="{{post.id}}" 
+                data-content="{{post.post_content}}"  
+                class="btn-edit btn btn-primary btn-small">
+          Edit
+        </button>
+      {% endif %}
+    </div>
+  </div>
 {% empty %}
-    <p>No posts yet.</p>
+  <p>No posts yet.</p>
 {% endfor %}
 
 <nav aria-label="Page navigation example">
@@ -47,3 +77,7 @@
 </nav>
 
 
+{% block scripts %}
+<script src="{% static "network/js/editBtn.js" %}"></script>
+<script src="{% static "network/js/likeBtn.js" %}"></script>
+{% endblock scripts %}

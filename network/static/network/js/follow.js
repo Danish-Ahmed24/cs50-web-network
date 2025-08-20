@@ -2,8 +2,8 @@ document.addEventListener("DOMContentLoaded", () => {
 	const follow_or_unfollow_btn = document.querySelector(
 		"#follow_or_unfollow_btn"
 	);
-    const following_count = document.querySelector('#following-count');
-    const followers_count = document.querySelector('#followers-count')
+	const following_count = document.querySelector("#following-count");
+	const followers_count = document.querySelector("#followers-count");
 
 	follow_or_unfollow_btn.addEventListener("click", () => {
 		if (follow_or_unfollow_btn.innerHTML.trim().toLowerCase() == "follow") {
@@ -16,10 +16,9 @@ document.addEventListener("DOMContentLoaded", () => {
 			})
 				.then((response) => response.json())
 				.then((json) => console.log(json));
-            
-			follow_or_unfollow_btn.innerHTML = "unfollow";
-            followers_count.innerHTML = `${parseInt(followers_count.innerHTML)+1}`;
 
+			follow_or_unfollow_btn.innerHTML = "unfollow";
+			followers_count.innerHTML = `${parseInt(followers_count.innerHTML) + 1}`;
 		} else {
 			fetch(`/unfollow/${follow_or_unfollow_btn.dataset.author}`, {
 				method: "POST",
@@ -31,7 +30,7 @@ document.addEventListener("DOMContentLoaded", () => {
 				.then((response) => response.json())
 				.then((json) => console.log(json));
 			follow_or_unfollow_btn.innerHTML = "follow";
-            followers_count.innerHTML = `${parseInt(followers_count.innerHTML)-1}` ;
+			followers_count.innerHTML = `${parseInt(followers_count.innerHTML) - 1}`;
 		}
 	}); //toggle follow and unfollow
 });

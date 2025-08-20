@@ -1,3 +1,5 @@
+import json
+from math import log
 from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
@@ -123,6 +125,8 @@ def unfollow(request,username):
         return JsonResponse({"message": "unFollowed successfully"})
     
     return JsonResponse({"error": "Method not allowed"}, status=405)
+
+
 @login_required
 def following(request):
     # Get all posts from users the logged-in user is following
@@ -134,4 +138,34 @@ def following(request):
     page_obj = paginator.get_page(page_number)
     return render(request, 'network/following.html', {
         'page_obj': page_obj,
+    })
+
+
+def edit_post(request, id):
+    if request.method == "POST":
+            data = json.loads(request.body)  # parse JSON body
+            new_content = data.get("newContent")
+
+            print("Post ID:", id)
+            print("New Content:", new_content)
+
+            post = Post.objects.get(id=id)
+            post.post_content = new_content
+            post.save()
+            return JsonResponse({"message": "Post updated successfully", "newContent": new_content})
+    return JsonResponse({"error": "Invalid request method"}, status=405)
+
+def like(request, id):
+    post = get_object_or_404(Post, id=id)
+
+    if request.user in post.posts_likes.all():
+        post.posts_likes.remove(request.user)  # Unlike
+        message = "Unliked successfully"
+    else:
+        post.posts_likes.add(request.user)  # Like
+        message = "Liked successfully"
+
+    return JsonResponse({
+        "message": message,
+        "likes_count": post.posts_likes.count()
     })
