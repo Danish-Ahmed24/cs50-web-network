@@ -16,14 +16,14 @@ document.addEventListener("DOMContentLoaded", () => {
         // ✅ Update like count
         const likesElement = document.querySelector(`#likes-count-${postId}`);
         if (likesElement) {
-          likesElement.innerText = `${data.likes_count} ❤️`;
+          likesElement.innerText = `${data.likes_count}`;
         }
 
         // ✅ Toggle button text
         if (data.message === "Liked successfully" || data.message === "Liked") {
-          button.innerText = "Unlike 💔";
+          button.innerText = "Unlike";
         } else {
-          button.innerText = "Like ❤️";
+          button.innerText = "Like";
         }
       });
     });

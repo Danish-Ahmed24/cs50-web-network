@@ -1,81 +1,115 @@
 {% load static %}
-{% for post in page_obj %}
-  <div class="card">
-    <h4>
-      <a href='{% url "profilePage" username=post.post_creator.username %}'>
-        {{ post.post_creator }}
-      </a>
-    </h4>
 
-    <div class="default" style="display: block;">
-      <p id="post-content">{{ post.post_content }}</p>
-      <p>posted at {{ post.post_creation_date }}</p>
+<div class="container mt-4">
+  {% for post in page_obj %}
+    <div class="card mb-4 shadow-sm">
+      <div class="card-body">
+        <!-- Post Header -->
+        <div class="mb-3">
+          <h5 class="card-title mb-1">
+            <a href='{% url "profilePage" username=post.post_creator.username %}' 
+               class="text-decoration-none text-dark fw-bold">
+              {{ post.post_creator }}
+            </a>
+          </h5>
+          <small class="text-muted">{{ post.post_creation_date }}</small>
+        </div>
+        
+        <!-- Default View -->
+        <div class="default" style="display: block;">
+          <p id="post-content" class="card-text mb-3">{{ post.post_content }}</p>
+          
+          <!-- Post Actions -->
+          <div class="d-flex align-items-center justify-content-between border-top pt-3">
+            <div class="d-flex align-items-center">
+              <!-- Like Count and Button -->
+              <div class="d-flex align-items-center me-3">
+                <span id="likes-count-{{ post.id }}" class="me-2 text-muted">
+                  {{ post.posts_likes.count }} 
+                </span><span style="margin-left: 5px; margin-right: 5px;">likes</span>
+                <button class="btn-toggle-like btn btn-outline-danger btn-sm"
+                        data-id="{{ post.id }}">
+                  {% if user in post.posts_likes.all %}
+                    Unlike
+                  {% else %}
+                    Like
+                  {% endif %}
+                </button>
+              </div>
+            </div>
+            
+            <!-- Edit Button (if user owns the post) -->
+            {% if post.post_creator == user %}
+              <button id="{{post.id}}"
+                      data-id="{{post.id}}"
+                      data-content="{{post.post_content}}"
+                      class="btn-edit btn btn-outline-primary btn-sm">
+                Edit
+              </button>
+            {% endif %}
+          </div>
+        </div>
 
-      <!-- Like Count -->
-      <p id="likes-count-{{ post.id }}">{{ post.posts_likes.count }} ❤️</p>
-
-      <!-- ✅ Toggle button -->
-      <button 
-        class="btn-toggle-like btn btn-primary btn-small" 
-        data-id="{{ post.id }}">
-        {% if user in post.posts_likes.all %}
-          Unlike 💔
-        {% else %}
-          Like ❤️
-        {% endif %}
-      </button>
-
-      {% if post.post_creator == user %}
-        <button id="{{post.id}}" 
-                data-id="{{post.id}}" 
-                data-content="{{post.post_content}}"  
-                class="btn-edit btn btn-primary btn-small">
-          Edit
-        </button>
-      {% endif %}
+        <!-- Edit Form (Hidden by default) -->
+        <div class="update" style="display: none;">
+          <textarea class="form-control mb-3" rows="4"></textarea>
+          <button id="save" data-id="{{ post.id }}" class="btn btn-primary btn-sm">
+            Save
+          </button>
+        </div>
+      </div>
     </div>
-  </div>
-{% empty %}
-  <p>No posts yet.</p>
-{% endfor %}
-
-<nav aria-label="Page navigation example">
-  <ul class="pagination">
-    
-    <!-- Previous button -->
-    {% if page_obj.has_previous %}
-      <li class="page-item">
-        <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
-      </li>
-    {% else %}
-      <li class="page-item disabled">
-        <span class="page-link">Previous</span>
-      </li>
-    {% endif %}
-
-    <!-- Page numbers -->
-    {% for num in page_obj.paginator.page_range %}
-      {% if page_obj.number == num %}
-        <li class="page-item active"><span class="page-link">{{ num }}</span></li>
-      {% else %}
-        <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
-      {% endif %}
-    {% endfor %}
-
-    <!-- Next button -->
-    {% if page_obj.has_next %}
-      <li class="page-item">
-        <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
-      </li>
-    {% else %}
-      <li class="page-item disabled">
-        <span class="page-link">Next</span>
-      </li>
-    {% endif %}
-
-  </ul>
-</nav>
-
+  {% empty %}
+    <div class="text-center py-5">
+      <div class="text-muted">
+        <h4>No posts yet.</h4>
+        <p>Be the first to share something!</p>
+      </div>
+    </div>
+  {% endfor %}
+  
+  <!-- Pagination -->
+  {% if page_obj.paginator.num_pages > 1 %}
+    <nav aria-label="Posts pagination" class="d-flex justify-content-center mt-4">
+      <ul class="pagination">
+        <!-- Previous button -->
+        {% if page_obj.has_previous %}
+          <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+          </li>
+        {% else %}
+          <li class="page-item disabled">
+            <span class="page-link">Previous</span>
+          </li>
+        {% endif %}
+        
+        <!-- Page numbers -->
+        {% for num in page_obj.paginator.page_range %}
+          {% if page_obj.number == num %}
+            <li class="page-item active">
+              <span class="page-link">{{ num }}</span>
+            </li>
+          {% else %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+            </li>
+          {% endif %}
+        {% endfor %}
+        
+        <!-- Next button -->
+        {% if page_obj.has_next %}
+          <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+          </li>
+        {% else %}
+          <li class="page-item disabled">
+            <span class="page-link">Next</span>
+          </li>
+        {% endif %}
+      </ul>
+    </nav>
+  {% endif %}
+</div>
 
 {% block scripts %}
 <script src="{% static "network/js/editBtn.js" %}"></script>
