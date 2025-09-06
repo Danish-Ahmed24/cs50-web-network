@@ -1,5 +1,319 @@
 {% extends "network/layout.html" %}
 
+{% block title %}Home - Social Network{% endblock %}
+
 {% block body %}
-    {% include "network/_posts_list.html" with all_posts=all_posts %}
+<div class="index-container">
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <div class="hero-content">
+            <div class="hero-text">
+                <h1 class="hero-title">
+                    <span class="gradient-text">Welcome to Network</span>
+                </h1>
+                <p class="hero-subtitle">
+                    Discover amazing posts, connect with people, and share your thoughts with the world.
+                </p>
+            </div>
+            
+            {% if not user.is_authenticated %}
+            <div class="hero-cta">
+                <a href="{% url 'register' %}" class="btn-primary-custom">
+                    <i class="fas fa-user-plus me-2"></i>Join Network
+                </a>
+                <a href="{% url 'login' %}" class="btn-secondary-custom">
+                    <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                </a>
+            </div>
+            {% else %}
+            <div class="hero-cta">
+                <a href="{% url 'newPost' %}" class="btn-primary-custom">
+                    <i class="fas fa-plus me-2"></i>Create New Post
+                </a>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Animated particles -->
+        <div class="particles">
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+        </div>
+    </div>
+
+    <!-- Posts Section Header -->
+    <div class="section-header">
+        <h2 class="section-title">
+            <i class="fas fa-fire me-2"></i>
+            Latest Posts
+        </h2>
+        <div class="section-divider"></div>
+    </div>
+
+    <!-- Posts Content -->
+    <div class="posts-container">
+        {% include "network/_posts_list.html" with all_posts=all_posts %}
+    </div>
+</div>
+
+<style>
+    .index-container {
+        max-width: 100%;
+        margin: 0 auto;
+        padding: 0;
+    }
+
+    /* Hero Section */
+    .hero-section {
+        position: relative;
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+        border-radius: 20px;
+        padding: 4rem 2rem;
+        margin-bottom: 3rem;
+        text-align: center;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 2;
+    }
+
+    .hero-title {
+        font-size: 3.5rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        line-height: 1.2;
+    }
+
+    .gradient-text {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        animation: gradientShift 3s ease-in-out infinite alternate;
+    }
+
+    @keyframes gradientShift {
+        0% { filter: hue-rotate(0deg); }
+        100% { filter: hue-rotate(30deg); }
+    }
+
+    .hero-subtitle {
+        font-size: 1.3rem;
+        color: var(--text-secondary);
+        margin-bottom: 2.5rem;
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+        line-height: 1.6;
+    }
+
+    .hero-cta {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    /* Custom Buttons */
+    .btn-primary-custom, .btn-secondary-custom {
+        display: inline-flex;
+        align-items: center;
+        padding: 1rem 2rem;
+        border-radius: 50px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-primary-custom {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+    }
+
+    .btn-primary-custom:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+
+    .btn-secondary-custom {
+        background: rgba(255, 255, 255, 0.1);
+        color: var(--text-primary);
+        border: 2px solid rgba(102, 126, 234, 0.3);
+        backdrop-filter: blur(10px);
+    }
+
+    .btn-secondary-custom:hover {
+        background: rgba(102, 126, 234, 0.2);
+        border-color: rgba(102, 126, 234, 0.6);
+        transform: translateY(-3px);
+        color: var(--text-primary);
+        text-decoration: none;
+    }
+
+    /* Section Header */
+    .section-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .section-title {
+        font-size: 2rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .section-title i {
+        color: #f093fb;
+        animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+    }
+
+    .section-divider {
+        width: 80px;
+        height: 4px;
+        background: linear-gradient(135deg, #667eea 0%, #f093fb 100%);
+        margin: 0 auto;
+        border-radius: 2px;
+    }
+
+    /* Posts Container */
+    .posts-container {
+        position: relative;
+        z-index: 1;
+    }
+
+    /* Animated Particles */
+    .particles {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 1;
+    }
+
+    .particle {
+        position: absolute;
+        width: 4px;
+        height: 4px;
+        background: rgba(102, 126, 234, 0.6);
+        border-radius: 50%;
+        animation: float 6s ease-in-out infinite;
+    }
+
+    .particle:nth-child(1) {
+        top: 20%;
+        left: 20%;
+        animation-delay: 0s;
+        animation-duration: 8s;
+    }
+
+    .particle:nth-child(2) {
+        top: 60%;
+        left: 80%;
+        animation-delay: 2s;
+        animation-duration: 10s;
+    }
+
+    .particle:nth-child(3) {
+        top: 80%;
+        left: 30%;
+        animation-delay: 4s;
+        animation-duration: 7s;
+    }
+
+    .particle:nth-child(4) {
+        top: 30%;
+        left: 70%;
+        animation-delay: 1s;
+        animation-duration: 9s;
+    }
+
+    .particle:nth-child(5) {
+        top: 70%;
+        left: 10%;
+        animation-delay: 3s;
+        animation-duration: 6s;
+    }
+
+    @keyframes float {
+        0%, 100% { 
+            transform: translateY(0px) rotate(0deg);
+            opacity: 1;
+        }
+        33% { 
+            transform: translateY(-20px) rotate(120deg);
+            opacity: 0.8;
+        }
+        66% { 
+            transform: translateY(20px) rotate(240deg);
+            opacity: 0.6;
+        }
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .hero-section {
+            padding: 2rem 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .hero-title {
+            font-size: 2.5rem;
+        }
+
+        .hero-subtitle {
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+        }
+
+        .hero-cta {
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .btn-primary-custom, .btn-secondary-custom {
+            width: 100%;
+            max-width: 280px;
+            justify-content: center;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .hero-title {
+            font-size: 2rem;
+        }
+
+        .hero-subtitle {
+            font-size: 1rem;
+        }
+    }
+</style>
 {% endblock %}

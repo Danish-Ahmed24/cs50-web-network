@@ -1,117 +1,701 @@
 {% load static %}
 
-<div class="container mt-4">
+<div class="posts-feed">
   {% for post in page_obj %}
-    <div class="card mb-4 shadow-sm">
-      <div class="card-body">
-        <!-- Post Header -->
-        <div class="mb-3">
-          <h5 class="card-title mb-1">
-            <a href='{% url "profilePage" username=post.post_creator.username %}' 
-               class="text-decoration-none text-dark fw-bold">
-              {{ post.post_creator }}
-            </a>
-          </h5>
-          <small class="text-muted">{{ post.post_creation_date }}</small>
+    <article class="post-card" data-post-id="{{ post.id }}">
+      <!-- Post Header -->
+      <div class="post-header">
+        <div class="author-info">
+          <div class="avatar-wrapper">
+            <div class="avatar">
+              {{ post.post_creator.username|first|upper }}
+            </div>
+            <div class="online-indicator"></div>
+          </div>
+          
+          <div class="author-details">
+            <h3 class="author-name">
+              <a href='{% url "profilePage" username=post.post_creator.username %}' 
+                 class="author-link">
+                {{ post.post_creator }}
+              </a>
+            </h3>
+            <time class="post-date" datetime="{{ post.post_creation_date|date:'c' }}">
+              {{ post.post_creation_date }}
+            </time>
+          </div>
         </div>
         
+        <!-- Post Menu -->
+        {% if post.post_creator == user %}
+          <div class="post-menu">
+            <button class="menu-trigger" aria-label="Post options">
+              <i class="fas fa-ellipsis-h"></i>
+            </button>
+          </div>
+        {% endif %}
+      </div>
+      
+      <!-- Post Content -->
+      <div class="post-content">
         <!-- Default View -->
-        <div class="default" style="display: block;">
-          <p id="post-content" class="card-text mb-3">{{ post.post_content }}</p>
-          
-          <!-- Post Actions -->
-          <div class="d-flex align-items-center justify-content-between border-top pt-3">
-            <div class="d-flex align-items-center">
-              <!-- Like Count and Button -->
-              <div class="d-flex align-items-center me-3">
-                <span id="likes-count-{{ post.id }}" class="me-2 text-muted">
-                  {{ post.posts_likes.count }} 
-                </span><span style="margin-left: 5px; margin-right: 5px;">likes</span>
-                <button class="btn-toggle-like btn btn-outline-danger btn-sm"
-                        data-id="{{ post.id }}">
-                  {% if user in post.posts_likes.all %}
-                    Unlike
-                  {% else %}
-                    Like
-                  {% endif %}
-                </button>
-              </div>
-            </div>
-            
-            <!-- Edit Button (if user owns the post) -->
-            {% if post.post_creator == user %}
-              <button id="{{post.id}}"
-                      data-id="{{post.id}}"
-                      data-content="{{post.post_content}}"
-                      class="btn-edit btn btn-outline-primary btn-sm">
-                Edit
-              </button>
-            {% endif %}
+        <div class="content-view" style="display: block;">
+          <div class="post-text" id="post-content-{{ post.id }}">
+            {{ post.post_content|linebreaks }}
           </div>
         </div>
 
         <!-- Edit Form (Hidden by default) -->
-        <div class="update" style="display: none;">
-          <textarea class="form-control mb-3" rows="4"></textarea>
-          <button id="save" data-id="{{ post.id }}" class="btn btn-primary btn-sm">
-            Save
-          </button>
+        <div class="edit-view" style="display: none;">
+          <div class="edit-form">
+            <textarea class="edit-textarea" rows="4" placeholder="What's on your mind?">{{ post.post_content }}</textarea>
+            <div class="edit-actions">
+              <button class="btn-save" data-id="{{ post.id }}">
+                <i class="fas fa-check me-1"></i>Save Changes
+              </button>
+              <button class="btn-cancel" data-id="{{ post.id }}">
+                <i class="fas fa-times me-1"></i>Cancel
+              </button>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
+      
+      <!-- Post Actions -->
+      <div class="post-actions">
+        <div class="action-group">
+          <!-- Like Button -->
+          <button class="action-btn like-btn btn-toggle-like {% if user in post.posts_likes.all %}liked{% endif %}"
+                  data-id="{{ post.id }}"
+                  aria-label="{% if user in post.posts_likes.all %}Unlike{% else %}Like{% endif %} post">
+            <div class="btn-content">
+              <i class="fas fa-heart"></i>
+              <span class="btn-text">
+                {% if user in post.posts_likes.all %}Liked{% else %}Like{% endif %}
+              </span>
+            </div>
+          </button>
+          
+          <!-- Like Count -->
+          <div class="like-count">
+            <span id="likes-count-{{ post.id }}" class="count-number">
+              {{ post.posts_likes.count }}
+            </span>
+            <span class="count-label">
+              {% if post.posts_likes.count == 1 %}like{% else %}likes{% endif %}
+            </span>
+          </div>
+        </div>
+        
+        <!-- Edit Button (if user owns the post) -->
+        {% if post.post_creator == user %}
+          <button class="action-btn edit-btn btn-edit"
+                  id="{{ post.id }}"
+                  data-id="{{ post.id }}"
+                  data-content="{{ post.post_content }}"
+                  aria-label="Edit post">
+            <div class="btn-content">
+              <i class="fas fa-edit"></i>
+              <span class="btn-text">Edit</span>
+            </div>
+          </button>
+        {% endif %}
+      </div>
+    </article>
   {% empty %}
-    <div class="text-center py-5">
-      <div class="text-muted">
-        <h4>No posts yet.</h4>
-        <p>Be the first to share something!</p>
+    <div class="empty-state">
+      <div class="empty-content">
+        <div class="empty-icon">
+          <i class="fas fa-comments"></i>
+        </div>
+        <h3 class="empty-title">No posts yet</h3>
+        <p class="empty-description">
+          Be the first to share something amazing with the community!
+        </p>
+        {% if user.is_authenticated %}
+          <a href="{% url 'newPost' %}" class="btn-create-first">
+            <i class="fas fa-plus me-2"></i>Create Your First Post
+          </a>
+        {% endif %}
       </div>
     </div>
   {% endfor %}
   
   <!-- Pagination -->
   {% if page_obj.paginator.num_pages > 1 %}
-    <nav aria-label="Posts pagination" class="d-flex justify-content-center mt-4">
-      <ul class="pagination">
+    <nav class="pagination-wrapper" aria-label="Posts pagination">
+      <div class="pagination-container">
         <!-- Previous button -->
         {% if page_obj.has_previous %}
-          <li class="page-item">
-            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
-          </li>
-        {% else %}
-          <li class="page-item disabled">
-            <span class="page-link">Previous</span>
-          </li>
+          <a class="pagination-btn prev-btn" 
+             href="?page={{ page_obj.previous_page_number }}"
+             aria-label="Go to previous page">
+            <i class="fas fa-chevron-left"></i>
+            <span>Previous</span>
+          </a>
         {% endif %}
         
         <!-- Page numbers -->
-        {% for num in page_obj.paginator.page_range %}
-          {% if page_obj.number == num %}
-            <li class="page-item active">
-              <span class="page-link">{{ num }}</span>
-            </li>
-          {% else %}
-            <li class="page-item">
-              <a class="page-link" href="?page={{ num }}">{{ num }}</a>
-            </li>
-          {% endif %}
-        {% endfor %}
+        <div class="page-numbers">
+          {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+              <span class="page-number active" aria-current="page">{{ num }}</span>
+            {% else %}
+              <a class="page-number" href="?page={{ num }}">{{ num }}</a>
+            {% endif %}
+          {% endfor %}
+        </div>
         
         <!-- Next button -->
         {% if page_obj.has_next %}
-          <li class="page-item">
-            <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
-          </li>
-        {% else %}
-          <li class="page-item disabled">
-            <span class="page-link">Next</span>
-          </li>
+          <a class="pagination-btn next-btn" 
+             href="?page={{ page_obj.next_page_number }}"
+             aria-label="Go to next page">
+            <span>Next</span>
+            <i class="fas fa-chevron-right"></i>
+          </a>
         {% endif %}
-      </ul>
+      </div>
+      
+      <!-- Page info -->
+      <div class="pagination-info">
+        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+      </div>
     </nav>
   {% endif %}
 </div>
 
+<style>
+  .posts-feed {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 0;
+  }
+
+  /* Post Card Styles */
+  .post-card {
+    background: rgba(26, 32, 44, 0.8);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .post-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #667eea, #764ba2, #f093fb);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .post-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    border-color: rgba(102, 126, 234, 0.3);
+  }
+
+  .post-card:hover::before {
+    opacity: 1;
+  }
+
+  /* Post Header */
+  .post-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+  }
+
+  .author-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .avatar-wrapper {
+    position: relative;
+  }
+
+  .avatar {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.2rem;
+    color: white;
+    border: 3px solid rgba(255, 255, 255, 0.1);
+    transition: transform 0.3s ease;
+  }
+
+  .avatar:hover {
+    transform: scale(1.1);
+  }
+
+  .online-indicator {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    width: 14px;
+    height: 14px;
+    background: #48bb78;
+    border-radius: 50%;
+    border: 2px solid var(--card-bg);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(72, 187, 120, 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(72, 187, 120, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(72, 187, 120, 0); }
+  }
+
+  .author-details {
+    flex: 1;
+  }
+
+  .author-name {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+
+  .author-link {
+    color: var(--text-primary);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    position: relative;
+  }
+
+  .author-link::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #667eea, #f093fb);
+    transition: width 0.3s ease;
+  }
+
+  .author-link:hover {
+    color: #667eea;
+    text-decoration: none;
+  }
+
+  .author-link:hover::after {
+    width: 100%;
+  }
+
+  .post-date {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    display: block;
+    margin-top: 0.25rem;
+  }
+
+  .post-menu {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .post-card:hover .post-menu {
+    opacity: 1;
+  }
+
+  .menu-trigger {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    padding: 0.5rem;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+  }
+
+  .menu-trigger:hover {
+    background: var(--hover-bg);
+    color: var(--text-primary);
+  }
+
+  /* Post Content */
+  .post-content {
+    margin-bottom: 1.5rem;
+  }
+
+  .post-text {
+    color: var(--text-primary);
+    line-height: 1.6;
+    font-size: 1rem;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+
+  /* Edit Form */
+  .edit-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .edit-textarea {
+    background: rgba(45, 55, 72, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    padding: 1rem;
+    color: var(--text-primary);
+    font-size: 1rem;
+    line-height: 1.6;
+    resize: vertical;
+    min-height: 100px;
+    transition: all 0.3s ease;
+    font-family: inherit;
+  }
+
+  .edit-textarea:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+  }
+
+  .edit-actions {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: flex-end;
+  }
+
+  /* Post Actions */
+  .post-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .action-group {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .action-btn {
+    background: none;
+    border: none;
+    padding: 0.75rem 1.25rem;
+    border-radius: 50px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-content {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    position: relative;
+    z-index: 2;
+  }
+
+  .like-btn {
+    color: var(--text-secondary);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .like-btn:hover {
+    color: #e53e3e;
+    background: rgba(229, 62, 62, 0.1);
+    border-color: rgba(229, 62, 62, 0.3);
+    transform: translateY(-2px);
+  }
+
+  .like-btn.liked {
+    color: #e53e3e;
+    background: rgba(229, 62, 62, 0.15);
+    border-color: rgba(229, 62, 62, 0.4);
+  }
+
+  .like-btn.liked i {
+    animation: heartbeat 0.6s ease-in-out;
+  }
+
+  @keyframes heartbeat {
+    0% { transform: scale(1); }
+    25% { transform: scale(1.3); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+  }
+
+  .edit-btn {
+    color: var(--text-secondary);
+    background: rgba(102, 126, 234, 0.1);
+    border: 1px solid rgba(102, 126, 234, 0.2);
+  }
+
+  .edit-btn:hover {
+    color: #667eea;
+    background: rgba(102, 126, 234, 0.2);
+    border-color: rgba(102, 126, 234, 0.4);
+    transform: translateY(-2px);
+  }
+
+  .btn-save, .btn-cancel {
+    padding: 0.75rem 1.5rem;
+    border-radius: 50px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .btn-save {
+    background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+    color: white;
+  }
+
+  .btn-save:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(72, 187, 120, 0.3);
+  }
+
+  .btn-cancel {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-secondary);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .btn-cancel:hover {
+    background: rgba(229, 62, 62, 0.1);
+    border-color: rgba(229, 62, 62, 0.3);
+    color: #e53e3e;
+  }
+
+  .like-count {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+  }
+
+  .count-number {
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  /* Empty State */
+  .empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: rgba(26, 32, 44, 0.5);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .empty-icon {
+    font-size: 4rem;
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+    opacity: 0.7;
+  }
+
+  .empty-title {
+    font-size: 1.5rem;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+  }
+
+  .empty-description {
+    color: var(--text-secondary);
+    margin-bottom: 2rem;
+    font-size: 1.1rem;
+  }
+
+  .btn-create-first {
+    display: inline-flex;
+    align-items: center;
+    padding: 1rem 2rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    text-decoration: none;
+    border-radius: 50px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+  }
+
+  .btn-create-first:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 30px rgba(102, 126, 234, 0.4);
+    color: white;
+    text-decoration: none;
+  }
+
+  /* Pagination */
+  .pagination-wrapper {
+    margin-top: 3rem;
+    padding: 2rem 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .pagination-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .pagination-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: rgba(26, 32, 44, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 50px;
+    color: var(--text-primary);
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+  }
+
+  .pagination-btn:hover {
+    background: rgba(102, 126, 234, 0.2);
+    border-color: rgba(102, 126, 234, 0.4);
+    transform: translateY(-2px);
+    color: var(--text-primary);
+    text-decoration: none;
+  }
+
+  .page-numbers {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .page-number {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+  }
+
+  .page-number:hover {
+    background: rgba(102, 126, 234, 0.2);
+    color: var(--text-primary);
+    text-decoration: none;
+    transform: scale(1.1);
+  }
+
+  .page-number.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    transform: scale(1.1);
+  }
+
+  .pagination-info {
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+  }
+
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .posts-feed {
+      padding: 0 1rem;
+    }
+
+    .post-card {
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .post-actions {
+      flex-direction: column;
+      gap: 1rem;
+      align-items: flex-start;
+    }
+
+    .action-group {
+      width: 100%;
+      justify-content: space-between;
+    }
+
+    .pagination-container {
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .pagination-btn {
+      padding: 0.5rem 1rem;
+      font-size: 0.9rem;
+    }
+
+    .page-numbers {
+      order: -1;
+      width: 100%;
+      justify-content: center;
+      margin-bottom: 1rem;
+    }
+  }
+</style>
+
 {% block scripts %}
 <script src="{% static "network/js/editBtn.js" %}"></script>
 <script src="{% static "network/js/likeBtn.js" %}"></script>
+
+<script>
+// Enhanced interactions
+document.addEventListener('DOMContentLoaded', function() {
+    // Smooth transitions for edit form
+    const editBtns = document.querySelectorAll('.btn-edit');
+    editBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const postCard = this.closest('.post-card');
+            const contentView = postCard.querySelector('.content-view');
+            const editView = postCard.querySelector('.edit-view');
+            
+            contentView.style.display = 'none';
+            editView.style.display = 'block';
+        });
+    });
+
+    // Cancel button functionality
+    const cancelBtns = document.querySelectorAll('.btn-cancel');
+    cancelBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const postCard = this.closest('.post-card');
+            const contentView = postCard.querySelector('.content-view');
+            const editView = postCard.querySelector('.edit-view');
+            
+            editView.style.display = 'none';
+            contentView.style.display = 'block';
+        });
+    });
+});
+</script>
 {% endblock scripts %}

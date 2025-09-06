@@ -1,21 +1,1266 @@
 {% extends "network/layout.html" %}
 {% load static %}
 
-{% block title %}profilePage{% endblock title %}
+{% block title %}{{ profile.username }} - Profile{% endblock title %}
 
 {% block body %}
-<div class="container">
-        <h1>username: {{profile.username}}</h1>
-        <h2>followers: <span id='followers-count'>{{followers_count}}</span></h2>
-        <h2>following:<span id='following-count'> {{following_count}}</span></h2>
-        {% if user.username != profile.username %}
-            <button id='follow_or_unfollow_btn' data-author='{{profile.username}}'>{% if is_following %}Unfollow{% else %}Follow{% endif %}</button>
+<div class="profile-container">
+    <!-- Profile Header Section -->
+    <div class="profile-header">
+        <div class="profile-backdrop">
+            <div class="backdrop-gradient"></div>
+            <div class="backdrop-particles">
+                <div class="particle"></div>
+                <div class="particle"></div>
+                <div class="particle"></div>
+                <div class="particle"></div>
+            </div>
+        </div>
+        
+        <div class="profile-content">
+            <!-- Avatar and Basic Info -->
+            <div class="profile-avatar-section">
+                <div class="avatar-wrapper">
+                    <div class="profile-avatar">
+                        {{ profile.username|first|upper }}
+                    </div>
+                    <div class="avatar-ring"></div>
+                    {% if user.username == profile.username %}
+                        <div class="edit-avatar-btn" title="Edit Profile">
+                            <i class="fas fa-camera"></i>
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="profile-info">
+                    <div class="profile-header-main">
+                        <h1 class="profile-username">{{ profile.username }}</h1>
+                        {% if user.username == profile.username %}
+                            <span class="profile-badge own-profile">
+                                <i class="fas fa-user me-1"></i>
+                                Your Profile
+                            </span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="profile-meta">
+                        <div class="join-date">
+                            <i class="fas fa-calendar-alt me-1"></i>
+                            <span>Joined {{ profile.date_joined|date:"M Y" }}</span>
+                        </div>
+                        <div class="profile-status">
+                            <div class="status-indicator active"></div>
+                            <span>Active</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Stats and Follow Section -->
+            <div class="profile-stats-section">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-heart"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-number" id="followers-count">{{ followers_count }}</div>
+                            <div class="stat-label">Followers</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-number" id="following-count">{{ following_count }}</div>
+                            <div class="stat-label">Following</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-edit"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-number">{{ all_posts.count }}</div>
+                            <div class="stat-label">Posts</div>
+                        </div>
+                    </div>
+                </div>
+                
+                {% if user.username != profile.username %}
+                    <div class="follow-section">
+                        <button class="follow-btn {% if is_following %}following{% endif %}" 
+                                id="follow_or_unfollow_btn" 
+                                data-author="{{ profile.username }}">
+                            <span class="btn-content">
+                                <i class="{% if is_following %}fas fa-user-check{% else %}fas fa-user-plus{% endif %} me-2"></i>
+                                <span class="btn-text">{% if is_following %}Following{% else %}Follow{% endif %}</span>
+                            </span>
+                            <div class="btn-loader">
+                                <i class="fas fa-spinner fa-spin"></i>
+                            </div>
+                            <div class="btn-ripple"></div>
+                        </button>
+                        
+                        <button class="message-btn" title="Send Message">
+                            <i class="fas fa-envelope me-2"></i>
+                            <span>Message</span>
+                        </button>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Profile Navigation -->
+    <div class="profile-navigation">
+        <div class="nav-tabs">
+            <button class="nav-tab active" data-tab="posts">
+                <i class="fas fa-th-large me-2"></i>
+                <span>Posts</span>
+                <div class="tab-indicator"></div>
+            </button>
+            <button class="nav-tab" data-tab="about">
+                <i class="fas fa-info-circle me-2"></i>
+                <span>About</span>
+                <div class="tab-indicator"></div>
+            </button>
+            {% if user.username == profile.username %}
+                <button class="nav-tab" data-tab="settings">
+                    <i class="fas fa-cog me-2"></i>
+                    <span>Settings</span>
+                    <div class="tab-indicator"></div>
+                </button>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Profile Content Tabs -->
+    <div class="profile-content-wrapper">
+        <!-- Posts Tab -->
+        <div class="tab-content active" id="posts-tab">
+            <div class="posts-section">
+                <div class="section-header">
+                    <div class="section-title">
+                        <i class="fas fa-stream me-2"></i>
+                        <span>{{ profile.username }}'s Posts</span>
+                    </div>
+                    {% if user.username == profile.username %}
+                        <a href="{% url 'newPost' %}" class="create-post-btn">
+                            <i class="fas fa-plus me-2"></i>
+                            <span>New Post</span>
+                        </a>
+                    {% endif %}
+                </div>
+                
+                <div class="posts-content">
+                    {% include "network/_posts_list.html" with all_posts=all_posts %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- About Tab -->
+        <div class="tab-content" id="about-tab">
+            <div class="about-section">
+                <div class="about-card">
+                    <div class="card-header">
+                        <i class="fas fa-user-circle me-2"></i>
+                        <h3>About {{ profile.username }}</h3>
+                    </div>
+                    <div class="card-content">
+                        <div class="info-row">
+                            <span class="info-label">
+                                <i class="fas fa-calendar-alt me-2"></i>
+                                Member since
+                            </span>
+                            <span class="info-value">{{ profile.date_joined|date:"F d, Y" }}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">
+                                <i class="fas fa-clock me-2"></i>
+                                Last active
+                            </span>
+                            <span class="info-value">{{ profile.last_login|timesince }} ago</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">
+                                <i class="fas fa-envelope me-2"></i>
+                                Email
+                            </span>
+                            <span class="info-value">
+                                {% if user.username == profile.username %}
+                                    {{ profile.email }}
+                                {% else %}
+                                    <span class="text-muted">Private</span>
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Settings Tab (only for own profile) -->
+        {% if user.username == profile.username %}
+            <div class="tab-content" id="settings-tab">
+                <div class="settings-section">
+                    <div class="settings-card">
+                        <div class="card-header">
+                            <i class="fas fa-cog me-2"></i>
+                            <h3>Profile Settings</h3>
+                        </div>
+                        <div class="card-content">
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <div class="setting-title">Privacy Settings</div>
+                                    <div class="setting-description">Manage who can see your profile and posts</div>
+                                </div>
+                                <button class="setting-btn">
+                                    <i class="fas fa-chevron-right"></i>
+                                </button>
+                            </div>
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <div class="setting-title">Email Notifications</div>
+                                    <div class="setting-description">Choose what notifications you receive</div>
+                                </div>
+                                <button class="setting-btn">
+                                    <i class="fas fa-chevron-right"></i>
+                                </button>
+                            </div>
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <div class="setting-title">Change Password</div>
+                                    <div class="setting-description">Update your account password</div>
+                                </div>
+                                <button class="setting-btn">
+                                    <i class="fas fa-chevron-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         {% endif %}
     </div>
+</div>
 
-    <h1>Posts:</h1>
-    {% include "network/_posts_list.html" with all_posts=all_posts %}    
+<style>
+    .profile-container {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 0;
+    }
+
+    /* Profile Header */
+    .profile-header {
+        position: relative;
+        background: rgba(26, 32, 44, 0.9);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 24px;
+        margin-bottom: 2rem;
+        overflow: hidden;
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+    }
+
+    .profile-backdrop {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 200px;
+        overflow: hidden;
+    }
+
+    .backdrop-gradient {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 100%;
+        background: linear-gradient(135deg, 
+            rgba(102, 126, 234, 0.3) 0%, 
+            rgba(118, 75, 162, 0.3) 50%, 
+            rgba(240, 147, 251, 0.3) 100%);
+        animation: gradientShift 8s ease-in-out infinite;
+    }
+
+    @keyframes gradientShift {
+        0%, 100% { opacity: 0.3; }
+        50% { opacity: 0.6; }
+    }
+
+    .backdrop-particles {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
+
+    .backdrop-particles .particle {
+        position: absolute;
+        width: 6px;
+        height: 6px;
+        background: rgba(255, 255, 255, 0.6);
+        border-radius: 50%;
+        animation: floatParticle 8s ease-in-out infinite;
+    }
+
+    .backdrop-particles .particle:nth-child(1) {
+        top: 20%;
+        left: 15%;
+        animation-delay: 0s;
+        animation-duration: 10s;
+    }
+
+    .backdrop-particles .particle:nth-child(2) {
+        top: 60%;
+        left: 75%;
+        animation-delay: 2s;
+        animation-duration: 8s;
+    }
+
+    .backdrop-particles .particle:nth-child(3) {
+        top: 40%;
+        left: 50%;
+        animation-delay: 4s;
+        animation-duration: 12s;
+    }
+
+    .backdrop-particles .particle:nth-child(4) {
+        top: 80%;
+        left: 25%;
+        animation-delay: 6s;
+        animation-duration: 9s;
+    }
+
+    @keyframes floatParticle {
+        0%, 100% { 
+            transform: translateY(0px) scale(1);
+            opacity: 0.6;
+        }
+        50% { 
+            transform: translateY(-20px) scale(1.2);
+            opacity: 1;
+        }
+    }
+
+    .profile-content {
+        position: relative;
+        z-index: 2;
+        padding: 2rem;
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+    }
+
+    /* Avatar Section */
+    .profile-avatar-section {
+        display: flex;
+        align-items: flex-end;
+        gap: 2rem;
+        margin-top: 100px;
+    }
+
+    .avatar-wrapper {
+        position: relative;
+    }
+
+    .profile-avatar {
+        width: 120px;
+        height: 120px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        font-weight: 700;
+        color: white;
+        border: 4px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        animation: avatarPulse 4s ease-in-out infinite;
+    }
+
+    @keyframes avatarPulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+    }
+
+    .avatar-ring {
+        position: absolute;
+        top: -8px;
+        left: -8px;
+        right: -8px;
+        bottom: -8px;
+        border: 2px solid transparent;
+        border-radius: 50%;
+        background: linear-gradient(45deg, #667eea, #f093fb) border-box;
+        mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+        mask-composite: subtract;
+        animation: rotateRing 3s linear infinite;
+    }
+
+    @keyframes rotateRing {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .edit-avatar-btn {
+        position: absolute;
+        bottom: 8px;
+        right: 8px;
+        width: 36px;
+        height: 36px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        cursor: pointer;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        transition: all 0.3s ease;
+        z-index: 3;
+    }
+
+    .edit-avatar-btn:hover {
+        transform: scale(1.1);
+        box-shadow: 0 12px 30px rgba(102, 126, 234, 0.4);
+    }
+
+    .profile-info {
+        flex: 1;
+    }
+
+    .profile-header-main {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 0.75rem;
+        flex-wrap: wrap;
+    }
+
+    .profile-username {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin: 0;
+        background: linear-gradient(135deg, #ffffff 0%, #a0aec0 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .profile-badge {
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+    }
+
+    .profile-badge.own-profile {
+        background: rgba(72, 187, 120, 0.2);
+        color: #48bb78;
+        border: 1px solid rgba(72, 187, 120, 0.3);
+    }
+
+    .profile-meta {
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        flex-wrap: wrap;
+    }
+
+    .join-date {
+        display: flex;
+        align-items: center;
+    }
+
+    .profile-status {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .status-indicator {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #48bb78;
+        box-shadow: 0 0 0 3px rgba(72, 187, 120, 0.3);
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+    }
+
+    /* Stats Section */
+    .profile-stats-section {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        gap: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+        flex: 1;
+    }
+
+    .stat-card {
+        background: rgba(45, 55, 72, 0.6);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 16px;
+        padding: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, 
+            transparent, 
+            rgba(255, 255, 255, 0.1), 
+            transparent);
+        transition: left 0.6s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        border-color: rgba(102, 126, 234, 0.3);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .stat-card:hover::before {
+        left: 100%;
+    }
+
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.2rem;
+    }
+
+    .stat-content {
+        flex: 1;
+    }
+
+    .stat-number {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        line-height: 1;
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-label {
+        color: var(--text-secondary);
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+
+    /* Follow Section */
+    .follow-section {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+    }
+
+    .follow-btn, .message-btn {
+        padding: 0.875rem 1.75rem;
+        border-radius: 50px;
+        font-weight: 600;
+        cursor: pointer;
+        border: none;
+        display: flex;
+        align-items: center;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .follow-btn {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+    }
+
+    .follow-btn.following {
+        background: rgba(255, 255, 255, 0.1);
+        color: var(--text-primary);
+        border: 2px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .follow-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4);
+    }
+
+    .follow-btn.following:hover {
+        background: rgba(229, 62, 62, 0.2);
+        border-color: rgba(229, 62, 62, 0.4);
+        color: #fc8181;
+    }
+
+    .follow-btn.following:hover .btn-text::after {
+        content: 'Unfollow';
+    }
+
+    .follow-btn.following:hover .btn-text {
+        font-size: 0;
+    }
+
+    .message-btn {
+        background: rgba(255, 255, 255, 0.1);
+        color: var(--text-primary);
+        border: 2px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .message-btn:hover {
+        background: rgba(102, 126, 234, 0.2);
+        border-color: rgba(102, 126, 234, 0.4);
+        transform: translateY(-3px);
+    }
+
+    .btn-content {
+        transition: opacity 0.3s ease;
+    }
+
+    .btn-loader {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .follow-btn.loading .btn-content {
+        opacity: 0;
+    }
+
+    .follow-btn.loading .btn-loader {
+        opacity: 1;
+    }
+
+    /* Navigation */
+    .profile-navigation {
+        background: rgba(26, 32, 44, 0.8);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 16px;
+        padding: 0.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    }
+
+    .nav-tabs {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .nav-tab {
+        flex: 1;
+        padding: 1rem 1.5rem;
+        background: none;
+        border: none;
+        border-radius: 12px;
+        color: var(--text-secondary);
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+
+    .nav-tab:hover {
+        color: var(--text-primary);
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    .nav-tab.active {
+        color: var(--text-primary);
+        background: linear-gradient(135deg, 
+            rgba(102, 126, 234, 0.2) 0%, 
+            rgba(118, 75, 162, 0.2) 100%);
+        border: 1px solid rgba(102, 126, 234, 0.3);
+    }
+
+    .tab-indicator {
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        width: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #667eea, #f093fb);
+        transition: all 0.3s ease;
+        transform: translateX(-50%);
+        border-radius: 2px;
+    }
+
+    .nav-tab.active .tab-indicator {
+        width: 60%;
+    }
+
+    /* Tab Content */
+    .profile-content-wrapper {
+        position: relative;
+    }
+
+    .tab-content {
+        display: none;
+        animation: fadeIn 0.5s ease;
+    }
+
+    .tab-content.active {
+        display: block;
+    }
+
+    @keyframes fadeIn {
+        from { 
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to { 
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Posts Section */
+    .posts-section {
+        margin-top: 0;
+    }
+
+    .section-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .section-title {
+        display: flex;
+        align-items: center;
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    .section-title i {
+        color: #f093fb;
+    }
+
+    .create-post-btn {
+        display: flex;
+        align-items: center;
+        padding: 0.75rem 1.5rem;
+        background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+        color: white;
+        text-decoration: none;
+        border-radius: 50px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 8px 20px rgba(72, 187, 120, 0.3);
+    }
+
+    .create-post-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 30px rgba(72, 187, 120, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+
+    /* About Section */
+    .about-section, .settings-section {
+        max-width: 600px;
+    }
+
+    .about-card, .settings-card {
+        background: rgba(26, 32, 44, 0.8);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+    }
+
+    .card-header {
+        background: rgba(45, 55, 72, 0.6);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 1.5rem 2rem;
+        display: flex;
+        align-items: center;
+    }
+
+    .card-header h3 {
+        margin: 0;
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    .card-header i {
+        color: #667eea;
+        font-size: 1.1rem;
+    }
+
+    .card-content {
+        padding: 2rem;
+    }
+
+    .info-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1rem 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .info-row:last-child {
+        border-bottom: none;
+    }
+
+    .info-label {
+        display: flex;
+        align-items: center;
+        color: var(--text-secondary);
+        font-weight: 500;
+    }
+
+    .info-label i {
+        color: #667eea;
+    }
+
+    .info-value {
+        color: var(--text-primary);
+        font-weight: 500;
+    }
+
+    .text-muted {
+        color: var(--text-secondary);
+        font-style: italic;
+    }
+
+    /* Settings Section */
+    .setting-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1.5rem 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        transition: all 0.3s ease;
+    }
+
+    .setting-item:last-child {
+        border-bottom: none;
+    }
+
+    .setting-item:hover {
+        background: rgba(255, 255, 255, 0.02);
+        margin: 0 -2rem;
+        padding-left: 2rem;
+        padding-right: 2rem;
+        border-radius: 8px;
+    }
+
+    .setting-info {
+        flex: 1;
+    }
+
+    .setting-title {
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 0.25rem;
+    }
+
+    .setting-description {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+    }
+
+    .setting-btn {
+        background: none;
+        border: none;
+        color: var(--text-secondary);
+        padding: 0.5rem;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .setting-btn:hover {
+        color: #667eea;
+        background: rgba(102, 126, 234, 0.1);
+        transform: translateX(5px);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .profile-container {
+            padding: 0 1rem;
+        }
+
+        .profile-header {
+            border-radius: 16px;
+        }
+
+        .profile-content {
+            padding: 1.5rem;
+        }
+
+        .profile-avatar-section {
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 1.5rem;
+            margin-top: 50px;
+        }
+
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            font-size: 2.5rem;
+        }
+
+        .profile-username {
+            font-size: 2rem;
+        }
+
+        .profile-header-main {
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .profile-meta {
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .profile-stats-section {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .stats-grid {
+            grid-template-columns: 1fr;
+            gap: 0.75rem;
+        }
+
+        .stat-card {
+            padding: 1.25rem;
+        }
+
+        .stat-number {
+            font-size: 1.5rem;
+        }
+
+        .follow-section {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .follow-btn, .message-btn {
+            flex: 1;
+            justify-content: center;
+            max-width: 150px;
+        }
+
+        .nav-tabs {
+            flex-direction: column;
+            gap: 0;
+        }
+
+        .nav-tab {
+            border-radius: 0;
+            justify-content: flex-start;
+            padding: 1rem 1.5rem;
+        }
+
+        .nav-tab:first-child {
+            border-top-left-radius: 12px;
+            border-top-right-radius: 12px;
+        }
+
+        .nav-tab:last-child {
+            border-bottom-left-radius: 12px;
+            border-bottom-right-radius: 12px;
+        }
+
+        .section-header {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 1rem;
+        }
+
+        .create-post-btn {
+            align-self: center;
+        }
+
+        .card-header, .card-content {
+            padding: 1.5rem;
+        }
+
+        .info-row, .setting-item {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+            text-align: left;
+        }
+
+        .setting-btn {
+            align-self: flex-end;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .profile-content {
+            padding: 1rem;
+        }
+
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            font-size: 2rem;
+        }
+
+        .profile-username {
+            font-size: 1.75rem;
+        }
+
+        .stats-grid {
+            gap: 0.5rem;
+        }
+
+        .stat-card {
+            padding: 1rem;
+            flex-direction: column;
+            text-align: center;
+            gap: 0.75rem;
+        }
+
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+            font-size: 1rem;
+        }
+
+        .stat-number {
+            font-size: 1.25rem;
+        }
+
+        .follow-btn, .message-btn {
+            padding: 0.75rem 1.25rem;
+            font-size: 0.9rem;
+        }
+
+        .nav-tab {
+            padding: 0.875rem 1.25rem;
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+        }
+
+        .card-header, .card-content {
+            padding: 1.25rem;
+        }
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Tab switching functionality
+    const navTabs = document.querySelectorAll('.nav-tab');
+    const tabContents = document.querySelectorAll('.tab-content');
+    
+    navTabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            const targetTab = this.getAttribute('data-tab');
+            
+            // Remove active class from all tabs and content
+            navTabs.forEach(t => t.classList.remove('active'));
+            tabContents.forEach(content => content.classList.remove('active'));
+            
+            // Add active class to clicked tab
+            this.classList.add('active');
+            
+            // Show corresponding content
+            const targetContent = document.getElementById(targetTab + '-tab');
+            if (targetContent) {
+                targetContent.classList.add('active');
+            }
+        });
+    });
+    
+    // Follow button functionality
+    const followBtn = document.getElementById('follow_or_unfollow_btn');
+    if (followBtn) {
+        followBtn.addEventListener('click', function() {
+            // Add loading state
+            this.classList.add('loading');
+            this.disabled = true;
+            
+            // Your existing follow/unfollow logic would go here
+            // This is just for visual demonstration
+            setTimeout(() => {
+                this.classList.remove('loading');
+                this.disabled = false;
+                
+                // Toggle button state
+                const isFollowing = this.classList.contains('following');
+                const btnText = this.querySelector('.btn-text');
+                const btnIcon = this.querySelector('i');
+                
+                if (isFollowing) {
+                    this.classList.remove('following');
+                    btnText.textContent = 'Follow';
+                    btnIcon.className = 'fas fa-user-plus me-2';
+                    
+                    // Update follower count
+                    const followersCount = document.getElementById('followers-count');
+                    const currentCount = parseInt(followersCount.textContent);
+                    followersCount.textContent = currentCount - 1;
+                } else {
+                    this.classList.add('following');
+                    btnText.textContent = 'Following';
+                    btnIcon.className = 'fas fa-user-check me-2';
+                    
+                    // Update follower count
+                    const followersCount = document.getElementById('followers-count');
+                    const currentCount = parseInt(followersCount.textContent);
+                    followersCount.textContent = currentCount + 1;
+                }
+            }, 1000);
+        });
+    }
+    
+    // Avatar hover effects
+    const avatar = document.querySelector('.profile-avatar');
+    if (avatar) {
+        avatar.addEventListener('mouseenter', function() {
+            this.style.transform = 'scale(1.1) rotate(5deg)';
+        });
+        
+        avatar.addEventListener('mouseleave', function() {
+            this.style.transform = 'scale(1) rotate(0deg)';
+        });
+    }
+    
+    // Stat cards animation on scroll
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.animation = 'slideInUp 0.6s ease forwards';
+            }
+        });
+    }, observerOptions);
+    
+    const statCards = document.querySelectorAll('.stat-card');
+    statCards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(30px)';
+        card.style.animationDelay = `${index * 0.1}s`;
+        observer.observe(card);
+    });
+    
+    // Add slideInUp animation
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes slideInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    `;
+    document.head.appendChild(style);
+    
+    // Settings items hover effect
+    const settingItems = document.querySelectorAll('.setting-item');
+    settingItems.forEach(item => {
+        item.addEventListener('click', function() {
+            // Add ripple effect
+            const ripple = document.createElement('div');
+            ripple.style.position = 'absolute';
+            ripple.style.borderRadius = '50%';
+            ripple.style.background = 'rgba(102, 126, 234, 0.3)';
+            ripple.style.transform = 'scale(0)';
+            ripple.style.animation = 'ripple 0.6s linear';
+            ripple.style.left = '50%';
+            ripple.style.top = '50%';
+            ripple.style.width = '20px';
+            ripple.style.height = '20px';
+            ripple.style.marginLeft = '-10px';
+            ripple.style.marginTop = '-10px';
+            
+            this.style.position = 'relative';
+            this.appendChild(ripple);
+            
+            setTimeout(() => {
+                ripple.remove();
+            }, 600);
+        });
+    });
+    
+    // Add ripple animation
+    style.textContent += `
+        @keyframes ripple {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+    `;
+});
+</script>
 {% endblock body %}
+
 {% block scripts %}
-        <script src="{% static 'network/js/follow.js' %}"></script>
+<script src="{% static 'network/js/follow.js' %}"></script>
 {% endblock scripts %}

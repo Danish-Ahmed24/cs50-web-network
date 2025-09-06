@@ -4,54 +4,321 @@
 <html lang="en">
     <head>
         <title>{% block title %}Social Network{% endblock %}</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        <!-- Bootstrap CSS -->
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+        
+        <!-- Google Fonts -->
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+        
+        <!-- Font Awesome -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+        
+        <!-- Custom Styles -->
         <link href="{% static 'network/styles.css' %}" rel="stylesheet">
+        
+        <style>
+            :root {
+                --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+                --dark-bg: #0f1419;
+                --card-bg: #1a202c;
+                --text-primary: #ffffff;
+                --text-secondary: #a0aec0;
+                --border-color: #2d3748;
+                --accent-color: #667eea;
+                --hover-bg: #2d3748;
+                --shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+                --shadow-hover: 0 20px 40px rgba(0, 0, 0, 0.4);
+            }
+
+            * {
+                box-sizing: border-box;
+            }
+
+            body {
+                font-family: 'Inter', sans-serif;
+                background: var(--dark-bg);
+                color: var(--text-primary);
+                margin: 0;
+                padding: 0;
+                min-height: 100vh;
+                overflow-x: hidden;
+            }
+
+            /* Animated background */
+            body::before {
+                content: '';
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: 
+                    radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                    radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+                    radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.2) 0%, transparent 50%);
+                z-index: -1;
+                animation: float 20s ease-in-out infinite;
+            }
+
+            @keyframes float {
+                0%, 100% { transform: translateY(0px); }
+                50% { transform: translateY(-20px); }
+            }
+
+            /* Navigation Styles */
+            .navbar {
+                background: rgba(26, 32, 44, 0.95) !important;
+                backdrop-filter: blur(20px);
+                border-bottom: 1px solid var(--border-color);
+                padding: 1rem 2rem;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+                position: sticky;
+                top: 0;
+                z-index: 1000;
+            }
+
+            .navbar-brand {
+                font-weight: 700;
+                font-size: 1.8rem;
+                background: var(--primary-gradient);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+                text-decoration: none;
+                position: relative;
+                transition: all 0.3s ease;
+            }
+
+            .navbar-brand::after {
+                content: '';
+                position: absolute;
+                bottom: -5px;
+                left: 0;
+                width: 0;
+                height: 3px;
+                background: var(--primary-gradient);
+                transition: width 0.3s ease;
+                border-radius: 2px;
+            }
+
+            .navbar-brand:hover::after {
+                width: 100%;
+            }
+
+            .navbar-brand:hover {
+                text-decoration: none;
+                transform: translateY(-2px);
+            }
+
+            .navbar-nav {
+                align-items: center;
+                gap: 0.5rem;
+            }
+
+            .nav-link {
+                color: var(--text-secondary) !important;
+                font-weight: 500;
+                padding: 0.7rem 1.2rem !important;
+                border-radius: 50px;
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                position: relative;
+                overflow: hidden;
+                text-decoration: none;
+            }
+
+            .nav-link::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: -100%;
+                width: 100%;
+                height: 100%;
+                background: var(--primary-gradient);
+                transition: left 0.3s ease;
+                z-index: -1;
+                border-radius: 50px;
+            }
+
+            .nav-link:hover {
+                color: white !important;
+                transform: translateY(-2px);
+                box-shadow: var(--shadow);
+                text-decoration: none;
+            }
+
+            .nav-link:hover::before {
+                left: 0;
+            }
+
+            /* Special styling for username */
+            .nav-link strong {
+                background: var(--secondary-gradient);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+                font-weight: 600;
+            }
+
+            /* Body Content */
+            .body {
+                padding: 2rem;
+                max-width: 1200px;
+                margin: 0 auto;
+                min-height: calc(100vh - 80px);
+                position: relative;
+            }
+
+            /* Responsive Design */
+            @media (max-width: 768px) {
+                .navbar {
+                    padding: 1rem;
+                }
+                
+                .navbar-collapse {
+                    background: rgba(26, 32, 44, 0.98);
+                    margin-top: 1rem;
+                    padding: 1rem;
+                    border-radius: 15px;
+                    border: 1px solid var(--border-color);
+                }
+
+                .body {
+                    padding: 1rem;
+                }
+
+                .navbar-nav {
+                    gap: 0;
+                }
+
+                .nav-link {
+                    margin: 0.2rem 0;
+                    text-align: center;
+                }
+            }
+
+            /* Custom scrollbar */
+            ::-webkit-scrollbar {
+                width: 8px;
+            }
+
+            ::-webkit-scrollbar-track {
+                background: var(--dark-bg);
+            }
+
+            ::-webkit-scrollbar-thumb {
+                background: var(--primary-gradient);
+                border-radius: 4px;
+            }
+
+            ::-webkit-scrollbar-thumb:hover {
+                background: var(--secondary-gradient);
+            }
+
+            /* Loading animation for smooth transitions */
+            .body > * {
+                animation: fadeInUp 0.6s ease-out;
+            }
+
+            @keyframes fadeInUp {
+                from {
+                    opacity: 0;
+                    transform: translateY(30px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            /* Enhanced navbar toggler for mobile */
+            .navbar-toggler {
+                border: none;
+                padding: 0.5rem;
+                background: var(--hover-bg);
+                border-radius: 8px;
+            }
+
+            .navbar-toggler:focus {
+                box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.5);
+            }
+
+            .navbar-toggler-icon {
+                background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.8%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='m4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+            }
+        </style>
     </head>
     <body>
-        <nav class="navbar navbar-expand-lg navbar-light bg-light">
-            <a class="navbar-brand" href="#">Network</a>
+        <nav class="navbar navbar-expand-lg">
+            <a class="navbar-brand" href="{% url 'index' %}">
+                <i class="fas fa-share-alt me-2"></i>Network
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
           
-            <div>
-              <ul class="navbar-nav mr-auto">
-                {% if user.is_authenticated %}
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ml-auto">
+                    {% if user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="nav-link" href='{% url "profilePage" username=user.username %}'>
+                                <i class="fas fa-user me-1"></i>
+                                <strong>{{ user.username }}</strong>
+                            </a>
+                        </li>
+                    {% endif %}
                     <li class="nav-item">
-                        <a class="nav-link" href='{% url "profilePage" username=user.username %}'><strong>{{ user.username }}</strong></a>
+                        <a class="nav-link" href="{% url 'index' %}">
+                            <i class="fas fa-home me-1"></i>All Posts
+                        </a>
                     </li>
-                {% endif %}
-                <li class="nav-item">
-                  <a class="nav-link" href="{% url 'index' %}">All Posts</a>
-                </li>
-                {% if user.is_authenticated %}
-                    
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url "newPost" %}">Create New Post</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url "following" %}">Following</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'logout' %}">Log Out</a>
-                    </li>
-                {% else %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'login' %}">Log In</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'register' %}">Register</a>
-                    </li>
-                {% endif %}
-              </ul>
+                    {% if user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url "newPost" %}">
+                                <i class="fas fa-plus me-1"></i>Create Post
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url "following" %}">
+                                <i class="fas fa-heart me-1"></i>Following
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'logout' %}">
+                                <i class="fas fa-sign-out-alt me-1"></i>Log Out
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'login' %}">
+                                <i class="fas fa-sign-in-alt me-1"></i>Log In
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'register' %}">
+                                <i class="fas fa-user-plus me-1"></i>Register
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
             </div>
-          </nav>
+        </nav>
         
         <div class="body">
             {% block body %}
             {% endblock %}
         </div>
-    </body>
-   
+
+        <!-- Bootstrap JS -->
+        <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+        
         {% block scripts %}
-       
         {% endblock scripts %}
-    
+    </body>
 </html>
